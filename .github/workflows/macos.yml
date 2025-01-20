@@ -53,7 +53,9 @@ jobs:
 
       - name: Install Dependencies (including GStreamer)
         working-directory: ${{ github.workspace }}/tools/setup
-        run: sh macos-dependencies.sh
+        run: |
+          sh macos-dependencies.sh
+          echo "PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/lib/pkgconfig:/Library/Frameworks/GStreamer.framework/lib/gstreamer-1.0/pkgconfig:${{ env.PKG_CONFIG_PATH }}" >> "$GITHUB_ENV"
 
       - uses: lukka/get-cmake@latest
       - uses: seanmiddleditch/gha-setup-ninja@v5

@@ -51,6 +51,13 @@ jobs:
           modules:      qtcharts
           setup-python: true
 
+      - name: Cleanup previous builds
+        run: |
+          sudo rm -rf /Library/Frameworks/GStreamer.framework
+          sudo rm -rf /Library/lib/GStreamer.framework
+          sudo pkgutil --forget org.freedesktop.gstreamer.x86_64.gstreamer-1.0 || true
+          sudo pkgutil --forget org.freedesktop.gstreamer.x86_64.gstreamer-1.0-devel || true
+
       - name: Install Gstreamer
         run: |
             wget https://gstreamer.freedesktop.org/data/pkg/osx/1.18.6/gstreamer-1.0-devel-1.18.6-x86_64.pkg

@@ -19,8 +19,8 @@ pushd $TMPDIR
 curl -O $GST_URL/$GST_VERSION/$GST_DEV_PKG
 curl -O $GST_URL/$GST_VERSION/$GST_PKG
 echo "Sudo may be required to install GStreamer"
-sudo installer -verbose -pkg "$GST_DEV_PKG" -target /
-sudo installer -verbose -pkg "$GST_DEV_PKG" -target /
+sudo installer -pkg "$GST_DEV_PKG" -target /
+sudo installer -pkg "$GST_DEV_PKG" -target /
 rm $TMPDIR/$GST_DEV_PKG
 rm $TMPDIR/$GST_PKG
 popd

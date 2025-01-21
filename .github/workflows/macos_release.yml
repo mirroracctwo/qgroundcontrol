@@ -51,44 +51,31 @@ jobs:
           modules:      qtcharts
           setup-python: true
 
-      - name: Cleanup previous builds
-        run: |
-          sudo rm -rf /Library/Frameworks/GStreamer.framework
-          sudo rm -rf /Library/lib/GStreamer.framework
-          sudo pkgutil --forget org.freedesktop.gstreamer.x86_64.gstreamer-1.0 || true
-          sudo pkgutil --forget org.freedesktop.gstreamer.x86_64.gstreamer-1.0-devel || true
-
       - name: Install Gstreamer
         run: |
-            wget https://gstreamer.freedesktop.org/data/pkg/osx/1.18.6/gstreamer-1.0-devel-1.18.6-x86_64.pkg
-            wget https://gstreamer.freedesktop.org/data/pkg/osx/1.18.6/gstreamer-1.0-1.18.6-x86_64.pkg
-            for package in *.pkg ;
-              do sudo installer -verbose -pkg "$package" -target /
-            done
+          wget https://gstreamer.freedesktop.org/data/pkg/osx/1.18.6/gstreamer-1.0-devel-1.18.6-x86_64.pkg
+          wget https://gstreamer.freedesktop.org/data/pkg/osx/1.18.6/gstreamer-1.0-1.18.6-x86_64.pkg
+          for package in *.pkg ;
+            do sudo installer -verbose -pkg "$package" -target /
+          done
 
-            # Clean up and recreate directory structure
-            sudo rm -rf /Library/lib/GStreamer.framework
-            sudo mkdir -p /Library/lib/GStreamer.framework/Versions/1.0
+          # Debug: Show what's in the original framework
+          echo "Original GStreamer framework contents:"
+          ls -la /Library/Frameworks/GStreamer.framework/Versions/1.0/lib/
 
-            # Create all necessary symlinks
-            sudo ln -sf /Library/Frameworks/GStreamer.framework/Versions/1.0/lib /Library/lib/GStreamer.framework/Versions/1.0/lib
-            sudo ln -sf /Library/Frameworks/GStreamer.framework/Versions/1.0/Headers /Library/lib/GStreamer.framework/Versions/1.0/Headers
-            sudo ln -sf /Library/Frameworks/GStreamer.framework/Versions/1.0/Resources /Library/lib/GStreamer.framework/Versions/1.0/Resources
-            sudo ln -sf /Library/Frameworks/GStreamer.framework/Versions/1.0/GStreamer /Library/lib/GStreamer.framework/Versions/1.0/GStreamer
+          # Clean up and recreate
+          sudo rm -rf /Library/lib/GStreamer.framework
+          sudo mkdir -p /Library/lib/GStreamer.framework/Versions/1.0/lib
 
-            # Set Current version symlink
-            sudo ln -sf 1.0 /Library/lib/GStreamer.framework/Versions/Current
+          # Copy the actual library files instead of symlinking the directory
+          sudo cp -R /Library/Frameworks/GStreamer.framework/Versions/1.0/lib/* /Library/lib/GStreamer.framework/Versions/1.0/lib/
 
-            # Create top-level symlinks
-            cd /Library/lib/GStreamer.framework
-            sudo ln -sf Versions/Current/lib lib
-            sudo ln -sf Versions/Current/Headers Headers
-            sudo ln -sf Versions/Current/Resources Resources
-            sudo ln -sf Versions/Current/GStreamer GStreamer
+          # Set permissions
+          sudo chmod -R 755 /Library/lib/GStreamer.framework
 
-            # Verify the structure
-            echo "Verifying framework structure:"
-            ls -la /Library/lib/GStreamer.framework/Versions/1.0/
+          # Debug: Show what we created
+          echo "New framework contents:"
+          ls -la /Library/lib/GStreamer.framework/Versions/1.0/lib/
 
       - name: Install ccache
         run:  brew install ccache

@@ -59,24 +59,6 @@ jobs:
             do sudo installer -verbose -pkg "$package" -target /
           done
 
-          # Debug: Show what's in the original framework
-          echo "Original GStreamer framework contents:"
-          ls -la /Library/Frameworks/GStreamer.framework/Versions/1.0/lib/
-
-          # Clean up and recreate
-          sudo rm -rf /Library/lib/GStreamer.framework
-          sudo mkdir -p /Library/lib/GStreamer.framework/Versions/1.0/lib
-
-          # Copy the actual library files instead of symlinking the directory
-          sudo cp -R /Library/Frameworks/GStreamer.framework/Versions/1.0/lib/* /Library/lib/GStreamer.framework/Versions/1.0/lib/
-
-          # Set permissions
-          sudo chmod -R 755 /Library/lib/GStreamer.framework
-
-          # Debug: Show what we created
-          echo "New framework contents:"
-          ls -la /Library/lib/GStreamer.framework/Versions/1.0/lib/
-
       - name: Install ccache
         run:  brew install ccache
 
@@ -112,23 +94,32 @@ jobs:
       - name: Build
         working-directory: ${{ runner.temp }}/shadow_build_dir
         run: |
+          # Setup environment variables
           export JOBS=$((`sysctl -n hw.ncpu`+1))
-          # Get SDK path
           export SDKROOT=$(xcrun --show-sdk-path)
-          export MACOSX_DEPLOYMENT_TARGET=10.14
-          # Set compiler paths explicitly
-          export QMAKE_MAC_SDK=macosx
-          export QMAKE_APPLE_DEVICE_ARCHS=x86_64
-          export CPATH="$SDKROOT/usr/include"
-          export LIBRARY_PATH="$SDKROOT/usr/lib"
           export QMAKE_DEFAULT_LIBDIRS="$SDKROOT/usr/lib"
           export QMAKE_DEFAULT_INCDIRS="$SDKROOT/usr/include"
-          qmake -r ${SOURCE_DIR}/qgroundcontrol.pro \
-            CONFIG+=installer \
-            CONFIG+=${BUILD_TYPE} \
-            -spec macx-clang \
-            QMAKE_APPLE_DEVICE_ARCHS=x86_64
+
+          # First just build the app
+          qmake -r ${SOURCE_DIR}/qgroundcontrol.pro CONFIG+=installer CONFIG+=${BUILD_TYPE}
           make -j$JOBS
+          
+          # Then manually do the deployment steps in the right order
+          # 1. Copy frameworks first
+          rsync -a --delete ${SOURCE_DIR}/libs/Frameworks/SDL2.framework QGroundControl.app/Contents/Frameworks/
+          rsync -a --delete /Library/Frameworks/GStreamer.framework QGroundControl.app/Contents/Frameworks/
+
+          # 2. Then run macdeployqt
+          /Users/runner/work/_temp/Qt/5.15.2/clang_64/bin/macdeployqt QGroundControl.app -appstore-compliant -verbose=1 -qmldir=${SOURCE_DIR}/src
+
+          # 3. Then clean up GStreamer
+          rm -rf QGroundControl.app/Contents/Frameworks/GStreamer.framework/Versions/1.0/{bin,etc,share,Headers,include,Commands}
+          rm -rf QGroundControl.app/Contents/Frameworks/GStreamer.framework/Versions/1.0/lib/{*.a,*.la,glib-2.0,gst-validate-launcher,pkgconfig}
+
+          # 4. Create the DMG
+          mkdir -p package staging
+          rsync -a --delete QGroundControl.app staging/
+          hdiutil create -verbose -size 1g -fs HFS+ -volname QGroundControl-0.0.0 -srcfolder staging -format UDBZ package/QGroundControl.dmg
 
       - name: ccache post-run
         run:  ccache -s

@@ -3,8 +3,7 @@ name: Docs
 on:
   push:
     branches:
-      - master
-      - 'Stable*'
+      - test
     tags:
       - 'v*'
     paths:

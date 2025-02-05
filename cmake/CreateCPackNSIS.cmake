@@ -13,25 +13,25 @@ set(CPACK_NSIS_MUI_UNIICON "${QGC_INSTALLER_SOURCE}/WindowsQGC.ico")
 # set(CPACK_NSIS_MUI_UNWELCOMEFINISHPAGE_BITMAP "")
 # set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "")
 set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
-    CreateDirectory \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\"
-    CreateShortCut \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\\${CMAKE_PROJECT_NAME}.lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
-    CreateShortCut \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\\${CMAKE_PROJECT_NAME} (GPU Compatibility Mode).lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"-desktop\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
-    CreateShortCut \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\\${CMAKE_PROJECT_NAME} (GPU Safe Mode).lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"-swrast\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
+    CreateDirectory \"\$SMPROGRAMS\\Saraj Drone Tech\"
+    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech.lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
+    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech (GPU Compatibility Mode).lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"-desktop\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
+    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech (GPU Safe Mode).lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"-swrast\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
 ")
 set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
-    Delete \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\\${CMAKE_PROJECT_NAME}.lnk\"
-    Delete \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\\${CMAKE_PROJECT_NAME} (GPU Compatibility Mode).lnk\"
-    Delete \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\\${CMAKE_PROJECT_NAME} (GPU Safe Mode).lnk\"
-    RMDir /r /REBOOTOK \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\"
+    Delete \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech.lnk\"
+    Delete \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech (GPU Compatibility Mode).lnk\"
+    Delete \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech (GPU Safe Mode).lnk\"
+    RMDir /r /REBOOTOK \"\$SMPROGRAMS\\Saraj Drone Tech\"
 ")
 set(CPACK_NSIS_COMPRESSOR "/SOLID /FINAL lzma")
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 set(CPACK_NSIS_MODIFY_PATH ON)
-set(CPACK_NSIS_DISPLAY_NAME "${CMAKE_PROJECT_NAME}")
-set(CPACK_NSIS_PACKAGE_NAME "${CMAKE_PROJECT_NAME} x64 ${CMAKE_PROJECT_VERSION}")
+set(CPACK_NSIS_DISPLAY_NAME "Saraj Drone Tech")
+set(CPACK_NSIS_PACKAGE_NAME "Saraj Drone Tech x64 ${CMAKE_PROJECT_VERSION}")
 # set(CPACK_NSIS_INSTALLED_ICON_NAME "")
-set(CPACK_NSIS_HELP_LINK "http://qgroundcontrol.com/#resources")
-set(CPACK_NSIS_URL_INFO_ABOUT ${CPACK_PACKAGE_HOMEPAGE_URL})
+set(CPACK_NSIS_HELP_LINK "https://wa.me/917033666421")
+set(CPACK_NSIS_URL_INFO_ABOUT "https://wa.me/917033666421")
 # set(CPACK_NSIS_CONTACT "")
 # set(CPACK_NSIS_<compName>_INSTALL_DIRECTORY "")
 # set(CPACK_NSIS_CREATE_ICONS_EXTRA "")
@@ -39,7 +39,7 @@ set(CPACK_NSIS_URL_INFO_ABOUT ${CPACK_PACKAGE_HOMEPAGE_URL})
 # set(CPACK_NSIS_EXECUTABLES_DIRECTORY "")
 # set(CPACK_NSIS_MUI_FINISHPAGE_RUN "")
 # set(CPACK_NSIS_MENU_LINKS "")
-set(CPACK_NSIS_UNINSTALL_NAME "${CMAKE_PROJECT_NAME}-Uninstall")
+set(CPACK_NSIS_UNINSTALL_NAME "Saraj Drone Tech-Uninstall")
 # set(CPACK_NSIS_WELCOME_TITLE "")
 # set(CPACK_NSIS_WELCOME_TITLE_3LINES "")
 # set(CPACK_NSIS_FINISH_TITLE "")

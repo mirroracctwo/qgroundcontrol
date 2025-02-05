@@ -1,3 +1,5 @@
+project(SarajDroneTech VERSION 1.0.0)
+
 cmake_minimum_required(VERSION 3.25)
 
 list(APPEND CMAKE_MODULE_PATH
@@ -34,7 +36,7 @@ include(Git)
 project(${QGC_APP_NAME}
     VERSION ${QGC_APP_VERSION}
     DESCRIPTION ${QGC_APP_DESCRIPTION}
-    HOMEPAGE_URL "https://qgroundcontrol.com/"
+    HOMEPAGE_URL "https://wa.me/917033666421"
     LANGUAGES C CXX
 )
 

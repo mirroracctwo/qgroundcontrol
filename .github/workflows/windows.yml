@@ -32,8 +32,8 @@ jobs:
         shell: cmd
 
     env:
-      ARTIFACT: QGroundControl-installer.exe
-      PACKAGE: QGroundControl-installer
+      ARTIFACT: SarajDroneTech-installer.exe
+      PACKAGE: SarajDroneTech-installer
       QT_VERSION: 6.8.1
       GST_VERSION: 1.22.12
       CPM_SOURCE_CACHE: ${{ github.workspace }}\cpm_modules
@@ -113,7 +113,7 @@ jobs:
       - name: Sanity check release excecutable
         if: matrix.BuildType == 'Release'
         working-directory: ${{ runner.temp }}\shadow_build_dir\Release
-        run: QGroundControl.exe --simple-boot-test
+        run: RanjanCreation.exe --simple-boot-test
 
       - name: Install
         working-directory: ${{ runner.temp }}\shadow_build_dir

@@ -1,11 +1,11 @@
 # The following options can be overriden by custom builds using the CustomOverrides.cmake file
 
 # General
-set(QGC_APP_NAME "QGroundControl" CACHE STRING "App Name")
-set(QGC_APP_COPYRIGHT "Copyright (c) 2024 QGroundControl. All rights reserved." CACHE STRING "Copyright")
-set(QGC_APP_DESCRIPTION "Open Source Ground Control App" CACHE STRING "Description")
-set(QGC_ORG_NAME "QGroundControl.org" CACHE STRING "Org Name")
-set(QGC_ORG_DOMAIN "org.qgroundcontrol" CACHE STRING "Domain")
+set(QGC_APP_NAME "Saraj Drone Tech" CACHE STRING "Application Name")
+set(QGC_APP_COPYRIGHT "Copyright (c) 2024 Saraj Drone Tech." CACHE STRING "Application Copyright")
+set(QGC_APP_DESCRIPTION "Saraj Drone Tech Application" CACHE STRING "Application Description")
+set(QGC_ORG_NAME "Saraj Drone Tech" CACHE STRING "Organization Name")
+set(QGC_ORG_DOMAIN "sarajdronetech.com" CACHE STRING "Organization Domain")
 
 option(QGC_STABLE_BUILD "Stable Build" OFF)
 option(QGC_DOWNLOAD_DEPENDENCIES "Download Dependencies if Possible" ON)
@@ -28,11 +28,11 @@ set(QGC_MAVLINK_GIT_TAG "b71f061a53941637cbcfc5bcf860f96bc82e0892" CACHE STRING 
 # Android
 set(QGC_QT_ANDROID_MIN_SDK_VERSION "28" CACHE STRING "Android Min SDK Version")
 set(QGC_QT_ANDROID_TARGET_SDK_VERSION "35" CACHE STRING "Android Target SDK Version")
-set(QGC_ANDROID_PACKAGE_NAME "org.mavlink.qgroundcontrol" CACHE STRING "Android Package Name")
+set(QGC_ANDROID_PACKAGE_NAME "com.sarajdronetech.app" CACHE STRING "Android Package Name")
 set(QGC_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android" CACHE PATH "Android Package Path")
 
 # MacOS
-set(QGC_BUNDLE_ID "org.qgroundcontrol.QGroundControl" CACHE STRING "MacOS Bundle ID") # MACOS
+set(QGC_BUNDLE_ID "com.sarajdronetech.app" CACHE STRING "MacOS Bundle ID") # MACOS
 set(QGC_MACOS_ICON_PATH "${CMAKE_SOURCE_DIR}/deploy/macos" CACHE PATH "MacOS Icon Path") # MACOS
 
 # Linux

@@ -48,6 +48,11 @@ SetCompressor /SOLID /FINAL lzma
 !define MUI_HEADERIMAGE_BITMAP "${HEADER_BITMAP}";
 !define MUI_ICON "${INSTALLER_ICON}";
 !define MUI_UNICON "${INSTALLER_ICON}";
+!define MUI_PRODUCT "Saraj Drone Tech"
+!define MUI_FILE "SarajDroneTech"
+!define MUI_VERSION "1.0.0"
+!define MUI_BRANDINGTEXT "Saraj Drone Tech ${MUI_VERSION}"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "installheader.bmp"
 
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 !insertmacro MUI_PAGE_DIRECTORY
@@ -93,11 +98,11 @@ doInstall:
   WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$\"$INSTDIR\${EXENAME}-Uninstall.exe$\""
   WriteRegDWORD HKLM "SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\${EXENAME}.exe" "DumpCount" 5
   WriteRegDWORD HKLM "SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\${EXENAME}.exe" "DumpType" 1
-  WriteRegExpandStr HKLM "SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\${EXENAME}.exe" "DumpFolder" "%LOCALAPPDATA%\QGCCrashDumps"
+  WriteRegExpandStr HKLM "SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\${EXENAME}.exe" "DumpFolder" "%LOCALAPPDATA%\SarajDroneTechCrashDumps"
 
   ; QGC stores its own driver version key to prevent installation if already up to date
   ; This prevents running the driver install a second time which will start up in repair mode which is confusing
-  !define QGCDRIVERVERSIONKEY "SOFTWARE\QGroundControlUAVDrivers"
+  !define QGCDRIVERVERSIONKEY "SOFTWARE\SarajDroneTechDrivers"
   !define QGCCURRENTDRIVERVERSION 3
 
   ; If the drivers are already installed the key "HKCU/SOFTWARE\MichaelOborne\driver\installed" will be present and set to 1
@@ -120,7 +125,7 @@ driversOutOfDate:
 driversNotInstalled:
   DetailPrint "UAV Drivers not installed."
   ; Delete abandoned possibly out of date version key
-  DeleteRegKey HKCU "SOFTWARE\QGroundControlUAVDrivers"
+  DeleteRegKey HKCU "SOFTWARE\SarajDroneTechDrivers"
 
 installDrivers:
   DetailPrint "Installing UAV Drivers..."

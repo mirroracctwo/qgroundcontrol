@@ -5,10 +5,20 @@ on:
     branches:
       - master
     paths:
-      - '**'
+      - '.github/workflows/windows.yml'
+      - 'deploy/windows/**'
+      - 'src/**'
+      - 'cmake/**'
+      - 'CMakeLists.txt'
+      - 'resources/icons/**'
   pull_request:
     paths:
-      - '**'
+      - '.github/workflows/windows.yml'
+      - 'deploy/windows/**'
+      - 'src/**'
+      - 'cmake/**'
+      - 'CMakeLists.txt'
+      - 'resources/icons/**'
 
 jobs:
   build:
@@ -81,7 +91,7 @@ jobs:
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: ${{ env.QT_ROOT_DIR }}/bin/qt-cmake -S ${{ github.workspace }} -B . -G Ninja
               -DCMAKE_BUILD_TYPE=${{ matrix.BuildType }}
-              -DQT_HOST_PATH="${{ env.QT_ROOT_DIR }}/../msvc2022_64"
+              -DQT_HOST_PATH="${{ env.QT_ROOT_DIR }}"
               -DQT_DEBUG_FIND_PACKAGE=ON
               -DQGC_STABLE_BUILD=OFF
 

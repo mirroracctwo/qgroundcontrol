@@ -3,11 +3,16 @@ name: Custom build
 on:
   push:
     branches:
-      - master
-      - 'Stable*'
-    tags:
-      - 'v*'
+      - test
+    paths:
+      - '.github/workflows/custom.yml'
+      - 'deploy/windows/**'
+      - 'src/**'
+      - 'custom-example/**'
+      - 'CMakeLists.txt'
   pull_request:
+    branches:
+      - test
     paths:
       - '.github/workflows/custom.yml'
       - 'deploy/windows/**'

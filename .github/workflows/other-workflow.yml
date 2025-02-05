@@ -1,0 +1,15 @@
+name: Other Workflow
+
+on:
+  push:
+    branches:
+      - test  # Only runs on test branch
+    paths:
+      - '.github/workflows/other-workflow.yml'
+      - 'relevant/paths/**'
+  pull_request:
+    branches:
+      - test  # Only PRs targeting test branch
+    paths:
+      - '.github/workflows/other-workflow.yml'
+      - 'relevant/paths/**' 

@@ -107,13 +107,17 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Searching for installer file..."
-          Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir" -Recurse -Filter "*.exe"
+          Write-Host "Contents of shadow_build_dir:"
+          Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir" -Recurse | Select-Object FullName
+          Write-Host "`nSearching for .exe files:"
+          Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir" -Recurse -Filter "*.exe" | Select-Object FullName
+          Write-Host "`nContents of _CPack_Packages:"
+          Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir\_CPack_Packages" -Recurse | Select-Object FullName
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE }}
           path: |
-            ${{ runner.temp }}\shadow_build_dir\Release\${{ env.ARTIFACT }}
-            ${{ runner.temp }}\shadow_build_dir\staging\${{ env.ARTIFACT }}
-            ${{ runner.temp }}\shadow_build_dir\**\${{ env.ARTIFACT }}
+            ${{ runner.temp }}\shadow_build_dir\_CPack_Packages\**\${{ env.ARTIFACT }}
+            ${{ runner.temp }}\shadow_build_dir\**\*.exe

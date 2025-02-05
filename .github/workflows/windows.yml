@@ -103,8 +103,17 @@ jobs:
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --install . --config ${{ matrix.BuildType }}
 
+      - name: List Build Directory
+        shell: pwsh
+        run: |
+          Write-Host "Searching for installer file..."
+          Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir" -Recurse -Filter "*.exe"
+
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE }}
-          path: ${{ runner.temp }}\shadow_build_dir\${{ env.ARTIFACT }}
+          path: |
+            ${{ runner.temp }}\shadow_build_dir\Release\${{ env.ARTIFACT }}
+            ${{ runner.temp }}\shadow_build_dir\staging\${{ env.ARTIFACT }}
+            ${{ runner.temp }}\shadow_build_dir\**\${{ env.ARTIFACT }}

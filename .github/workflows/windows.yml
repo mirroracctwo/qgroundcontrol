@@ -1,22 +1,14 @@
-name: Windows
+name: Windows Build
 
 on:
   push:
     branches:
       - master
-      - 'Stable*'
-    tags:
-      - 'v*'
+    paths:
+      - '**'
   pull_request:
     paths:
-      - '.github/workflows/windows.yml'
-      - 'deploy/windows/**'
-      - 'src/**'
-      - 'CMakeLists.txt'
-
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.ref }}
-#   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+      - '**'
 
 jobs:
   build:
@@ -25,7 +17,7 @@ jobs:
     strategy:
       matrix:
         BuildType: [Release]
-        Arch: [x64] # Arm64
+        Arch: [x64]
 
     defaults:
       run:
@@ -80,23 +72,10 @@ jobs:
           dir: ${{ runner.temp }}
           modules: qtcharts qtlocation qtpositioning qtspeech qt5compat qtmultimedia qtserialport qtimageformats qtshadertools qtconnectivity qtquick3d qtsensors
 
-      # Note: Must Use QtMultimedia VideoReceiver or build GStreamer manually
-      - name: Install Qt for Windows (Arm64)
-        if: matrix.Arch == 'Arm64'
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: ${{ env.QT_VERSION }}
-          aqtversion: ==3.1.19
-          host: windows
-          target: desktop
-          arch: win64_msvc2022_arm64_cross_compiled
-          dir: ${{ runner.temp }}
-          modules: qtcharts qtlocation qtpositioning qtspeech qt5compat qtmultimedia qtserialport qtimageformats qtshadertools qtconnectivity qtquick3d qtsensors
-
       - name: Set up Visual Studio shell
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: ${{ matrix.Arch == 'Arm64' && 'amd64_arm64' || 'x64' }}
+          arch: x64
 
       - name: Configure
         working-directory: ${{ runner.temp }}\shadow_build_dir
@@ -104,27 +83,18 @@ jobs:
               -DCMAKE_BUILD_TYPE=${{ matrix.BuildType }}
               -DQT_HOST_PATH="${{ env.QT_ROOT_DIR }}/../msvc2022_64"
               -DQT_DEBUG_FIND_PACKAGE=ON
-              -DQGC_STABLE_BUILD=${{ github.ref_type == 'tag' || contains(github.ref, 'Stable') && 'ON' || 'OFF' }}
+              -DQGC_STABLE_BUILD=OFF
 
       - name: Build
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --build . --target all --config ${{ matrix.BuildType }}
 
-      - name: Sanity check release excecutable
-        if: matrix.BuildType == 'Release'
-        working-directory: ${{ runner.temp }}\shadow_build_dir\Release
-        run: RanjanCreation.exe --simple-boot-test
-
       - name: Install
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --install . --config ${{ matrix.BuildType }}
 
-      - name: Upload Build File
-        if: matrix.BuildType == 'Release'
-        uses: ./.github/actions/upload
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
         with:
-          artifact_name: ${{ env.ARTIFACT }}
-          package_name: ${{ env.PACKAGE }}
-          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ env.PACKAGE }}
+          path: ${{ runner.temp }}\shadow_build_dir\${{ env.ARTIFACT }}

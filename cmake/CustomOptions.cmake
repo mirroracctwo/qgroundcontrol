@@ -1,7 +1,7 @@
 # The following options can be overriden by custom builds using the CustomOverrides.cmake file
 
 # General
-set(QGC_APP_NAME "Saraj Drone Tech" CACHE STRING "Application Name")
+set(QGC_APP_NAME "SarajDroneTech" CACHE STRING "Application Name")
 set(QGC_APP_COPYRIGHT "Copyright (c) 2024 Saraj Drone Tech." CACHE STRING "Application Copyright")
 set(QGC_APP_DESCRIPTION "Saraj Drone Tech Application" CACHE STRING "Application Description")
 set(QGC_ORG_NAME "Saraj Drone Tech" CACHE STRING "Organization Name")

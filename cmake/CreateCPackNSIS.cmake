@@ -14,9 +14,9 @@ set(CPACK_NSIS_MUI_UNIICON "${QGC_INSTALLER_SOURCE}/WindowsQGC.ico")
 # set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "")
 set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
     CreateDirectory \"\$SMPROGRAMS\\Saraj Drone Tech\"
-    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech.lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
-    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech (GPU Compatibility Mode).lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"-desktop\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
-    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech (GPU Safe Mode).lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"-swrast\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
+    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\SarajDroneTech.lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
+    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\SarajDroneTech (GPU Compatibility Mode).lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"-desktop\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
+    CreateShortCut \"\$SMPROGRAMS\\Saraj Drone Tech\\SarajDroneTech (GPU Safe Mode).lnk\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" \"-swrast\" \"\$INSTDIR\\bin\\${EXENAME}.exe\" 0
 ")
 set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
     Delete \"\$SMPROGRAMS\\Saraj Drone Tech\\Saraj Drone Tech.lnk\"

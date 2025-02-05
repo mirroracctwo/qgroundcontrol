@@ -103,6 +103,10 @@ jobs:
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --install . --config ${{ matrix.BuildType }}
 
+      - name: Package
+        working-directory: ${{ runner.temp }}\shadow_build_dir
+        run: cpack -G NSIS --config CPackConfig.cmake
+
       - name: List Build Directory
         shell: pwsh
         run: |
@@ -111,13 +115,10 @@ jobs:
           Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir" -Recurse | Select-Object FullName
           Write-Host "`nSearching for .exe files:"
           Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir" -Recurse -Filter "*.exe" | Select-Object FullName
-          Write-Host "`nContents of _CPack_Packages:"
-          Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir\_CPack_Packages" -Recurse | Select-Object FullName
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE }}
-          path: |
-            ${{ runner.temp }}\shadow_build_dir\_CPack_Packages\**\${{ env.ARTIFACT }}
-            ${{ runner.temp }}\shadow_build_dir\**\*.exe
+          path: ${{ runner.temp }}\shadow_build_dir\${{ env.ARTIFACT }}
+          if-no-files-found: error

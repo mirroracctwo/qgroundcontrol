@@ -23,23 +23,19 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
     strategy:
       matrix:
         BuildType: [Release]
         Arch: [x64]
-
     defaults:
       run:
         shell: cmd
-
     env:
       ARTIFACT: SarajDroneTech-installer.exe
       PACKAGE: SarajDroneTech-installer
       QT_VERSION: 6.8.1
       GST_VERSION: 1.22.12
       CPM_SOURCE_CACHE: ${{ github.workspace }}/cpm_modules
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

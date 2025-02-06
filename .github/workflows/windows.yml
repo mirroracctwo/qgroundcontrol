@@ -35,7 +35,7 @@ jobs:
       PACKAGE: SarajDroneTech-installer
       QT_VERSION: 6.8.1
       GST_VERSION: 1.22.12
-      CPM_SOURCE_CACHE: ${{ github.workspace }}/cpm_modules
+      CPM_SOURCE_CACHE: D:\a\qgroundcontrol\qgroundcontrol\cpm_modules
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -115,3 +115,6 @@ jobs:
           name: ${{ env.PACKAGE }}
           path: ${{ env.INSTALLER_PATH }}
           if-no-files-found: error
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false

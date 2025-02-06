@@ -38,7 +38,7 @@ jobs:
       PACKAGE: SarajDroneTech-installer
       QT_VERSION: 6.8.1
       GST_VERSION: 1.22.12
-      CPM_SOURCE_CACHE: ${{ runner.temp }}/cpm_modules
+      CPM_SOURCE_CACHE: ${{ github.workspace }}/cpm_modules
 
     steps:
       - name: Checkout repo
@@ -69,7 +69,7 @@ jobs:
           host: windows
           target: win64_msvc2022_64
           build-type: ${{ matrix.BuildType }}
-          cpm-modules: ${{ runner.temp }}/cpm_modules
+          cpm-modules: ${{ github.workspace }}/cpm_modules
 
       - name: Install Qt for Windows (x64)
         uses: jurplel/install-qt-action@v4

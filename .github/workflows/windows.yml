@@ -1,4 +1,4 @@
-name: Windows Build
+name: Windows
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
       PACKAGE: SarajDroneTech-installer
       QT_VERSION: 6.8.1
       GST_VERSION: 1.22.12
-      CPM_SOURCE_CACHE: ${{ runner.temp }}/cpm_modules
+      CPM_SOURCE_CACHE: ${{ github.workspace }}\cpm_modules
 
     steps:
       - name: Checkout repo
@@ -69,7 +69,7 @@ jobs:
           host: windows
           target: win64_msvc2022_64
           build-type: ${{ matrix.BuildType }}
-          cpm-modules: ${{ runner.temp }}/cpm_modules
+          cpm-modules: ${{ env.CPM_SOURCE_CACHE }}
 
       - name: Install Qt for Windows (x64)
         uses: jurplel/install-qt-action@v4
@@ -91,7 +91,7 @@ jobs:
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: ${{ env.QT_ROOT_DIR }}/bin/qt-cmake -S ${{ github.workspace }} -B . -G Ninja
               -DCMAKE_BUILD_TYPE=${{ matrix.BuildType }}
-              -DQT_HOST_PATH="${{ env.QT_ROOT_DIR }}"
+              -DQT_HOST_PATH="${{ env.QT_ROOT_DIR }}/../msvc2022_64"
               -DQT_DEBUG_FIND_PACKAGE=ON
               -DQGC_STABLE_BUILD=OFF
 
@@ -106,26 +106,13 @@ jobs:
       - name: Package
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: |
-          cpack -G NSIS -C ${{ matrix.BuildType }} -V
+          cpack -G NSIS -C ${{ matrix.BuildType }}
           echo "Searching for installer..."
           dir /s /b *.exe
-
-      - name: List Build Directory
-        shell: pwsh
-        run: |
-          Write-Host "Searching for installer file..."
-          $installer = Get-ChildItem -Path "${{ runner.temp }}\shadow_build_dir" -Recurse -Filter "*installer*.exe" | Select-Object -First 1
-          if ($installer) {
-              Write-Host "Found installer at: $($installer.FullName)"
-              echo "INSTALLER_PATH=$($installer.FullName)" >> $env:GITHUB_ENV
-          } else {
-              Write-Error "No installer found!"
-              exit 1
-          }
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE }}
-          path: ${{ env.INSTALLER_PATH }}
+          path: ${{ runner.temp }}\shadow_build_dir\_CPack_Packages\win64\NSIS\${{ env.ARTIFACT }}
           if-no-files-found: error

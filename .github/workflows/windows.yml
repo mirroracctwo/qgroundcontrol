@@ -38,7 +38,7 @@ jobs:
       PACKAGE: SarajDroneTech-installer
       QT_VERSION: 6.8.1
       GST_VERSION: 1.22.12
-      CPM_SOURCE_CACHE: ${{ github.workspace }}\cpm_modules
+      CPM_SOURCE_CACHE: ${{ runner.temp }}/cpm_modules
 
     steps:
       - name: Checkout repo
@@ -69,7 +69,7 @@ jobs:
           host: windows
           target: win64_msvc2022_64
           build-type: ${{ matrix.BuildType }}
-          cpm-modules: ${{ env.CPM_SOURCE_CACHE }}
+          cpm-modules: ${{ runner.temp }}/cpm_modules
 
       - name: Install Qt for Windows (x64)
         uses: jurplel/install-qt-action@v4
@@ -108,11 +108,14 @@ jobs:
         run: |
           cpack -G NSIS -C ${{ matrix.BuildType }}
           echo "Searching for installer..."
-          dir /s /b *.exe
+          for /r %%i in (*installer*.exe) do (
+            echo "Found installer: %%i"
+            echo "INSTALLER_PATH=%%i" >> %GITHUB_ENV%
+          )
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE }}
-          path: ${{ runner.temp }}\shadow_build_dir\_CPack_Packages\win64\NSIS\${{ env.ARTIFACT }}
+          path: ${{ env.INSTALLER_PATH }}
           if-no-files-found: error

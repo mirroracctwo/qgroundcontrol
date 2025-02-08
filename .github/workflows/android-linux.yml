@@ -1,18 +1,20 @@
 name: Android-Linux
 
-on:
-  push:
-    branches:
-      - test
-    tags:
-      - 'v*'
-  pull_request:
-    paths:
-      - '.github/workflows/android-linux.yml'
-      - 'deploy/android/**'
-      - 'src/**'
-      - 'android/**'
-      - 'CMakeLists.txt'
+# Disabled
+# on:
+#   push:
+#     branches:
+#       - master
+#       - 'Stable*'
+#     tags:
+#       - 'v*'
+#   pull_request:
+#     paths:
+#       - '.github/workflows/android-linux.yml'
+#       - 'deploy/android/**'
+#       - 'src/**'
+#       - 'android/**'
+#       - 'CMakeLists.txt'
 
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}

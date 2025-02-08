@@ -4,38 +4,40 @@ on:
   push:
     branches:
       - master
-    paths:
-      - '.github/workflows/windows.yml'
-      - 'deploy/windows/**'
-      - 'src/**'
-      - 'cmake/**'
-      - 'CMakeLists.txt'
-      - 'resources/icons/**'
+      - 'Stable*'
+    tags:
+      - 'v*'
   pull_request:
     paths:
       - '.github/workflows/windows.yml'
       - 'deploy/windows/**'
       - 'src/**'
-      - 'cmake/**'
       - 'CMakeLists.txt'
-      - 'resources/icons/**'
+
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
     runs-on: windows-latest
+
     strategy:
       matrix:
         BuildType: [Release]
         Arch: [x64]
+
     defaults:
       run:
         shell: cmd
+
     env:
       ARTIFACT: SarajDroneTech-installer.exe
-      PACKAGE: SarajDroneTech-installer
+      PACKAGE: SarajDroneTech
       QT_VERSION: 6.8.1
       GST_VERSION: 1.22.12
-      CPM_SOURCE_CACHE: D:\a\qgroundcontrol\qgroundcontrol\cpm_modules
+      CPM_SOURCE_CACHE: ${{ github.workspace }}\cpm_modules
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -45,14 +47,6 @@ jobs:
 
       - name: Initial Setup
         uses: ./.github/actions/common
-
-      - name: Install Vulkan
-        working-directory: ${{ runner.temp }}
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe" -OutFile vulkan-sdk.exe
-          .\vulkan-sdk.exe --root C:\VulkanSDK\latest --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.glm com.lunarg.vulkan.volk com.lunarg.vulkan.vma com.lunarg.vulkan.debug
-          echo "VULKAN_SDK=C:\VulkanSDK\latest" >> $env:GITHUB_ENV
 
       - name: Install GStreamer
         uses: blinemedical/setup-gstreamer@v1
@@ -65,7 +59,7 @@ jobs:
           host: windows
           target: win64_msvc2022_64
           build-type: ${{ matrix.BuildType }}
-          cpm-modules: ${{ github.workspace }}/cpm_modules
+          cpm-modules: ${{ env.CPM_SOURCE_CACHE }}
 
       - name: Install Qt for Windows (x64)
         uses: jurplel/install-qt-action@v4
@@ -89,7 +83,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=${{ matrix.BuildType }}
               -DQT_HOST_PATH="${{ env.QT_ROOT_DIR }}/../msvc2022_64"
               -DQT_DEBUG_FIND_PACKAGE=ON
-              -DQGC_STABLE_BUILD=OFF
+              -DQGC_STABLE_BUILD=${{ github.ref_type == 'tag' || contains(github.ref, 'Stable') && 'ON' || 'OFF' }}
 
       - name: Build
         working-directory: ${{ runner.temp }}\shadow_build_dir
@@ -99,22 +93,14 @@ jobs:
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --install . --config ${{ matrix.BuildType }}
 
-      - name: Package
-        working-directory: ${{ runner.temp }}\shadow_build_dir
-        run: |
-          cpack -G NSIS -C ${{ matrix.BuildType }}
-          echo "Searching for installer..."
-          for /r %%i in (*installer*.exe) do (
-            echo "Found installer: %%i"
-            echo "INSTALLER_PATH=%%i" >> %GITHUB_ENV%
-          )
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
+        uses: softprops/action-gh-release@v1
         with:
-          name: ${{ env.PACKAGE }}
-          path: ${{ env.INSTALLER_PATH }}
-          if-no-files-found: error
-          compression-level: 6
-          overwrite: false
-          include-hidden-files: false
+          files: ${{ runner.temp }}\shadow_build_dir\${{ env.ARTIFACT }}
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
+          name: ${{ github.ref_type == 'tag' && format('Release {0}', github.ref_name) || 'Development Build' }}
+          prerelease: ${{ github.ref_type != 'tag' }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

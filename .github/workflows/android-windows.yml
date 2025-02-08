@@ -3,16 +3,11 @@ name: Android-Windows
 on:
   push:
     branches:
-      - test
-    paths:
-      - '.github/workflows/android-windows.yml'
-      - 'deploy/android/**'
-      - 'src/**'
-      - 'android/**'
-      - 'CMakeLists.txt'
+      - master
+      - 'Stable*'
+    tags:
+      - 'v*'
   pull_request:
-    branches:
-      - test
     paths:
       - '.github/workflows/android-windows.yml'
       - 'deploy/android/**'

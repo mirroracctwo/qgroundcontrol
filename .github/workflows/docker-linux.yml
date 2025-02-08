@@ -3,7 +3,8 @@ name: Docker-Linux
 on:
   push:
     branches:
-      - test
+      - master
+      - 'Stable*'
     tags:
       - 'v*'
   pull_request:

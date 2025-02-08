@@ -1,7 +1,13 @@
 name: Android-MacOS
 
-on:
-  workflow_dispatch:
+# Disabled
+# on:
+#   push:
+#     branches:
+#       - master
+#       - 'Stable*'
+#     tags:
+#       - 'v*'
 
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}

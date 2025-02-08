@@ -77,6 +77,14 @@ jobs:
         with:
           arch: x64
 
+      - name: Install NSIS
+        shell: pwsh
+        run: |
+          $nsisUrl = "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.09/nsis-3.09-setup.exe"
+          Invoke-WebRequest -Uri $nsisUrl -OutFile nsis-setup.exe
+          Start-Process -FilePath .\nsis-setup.exe -ArgumentList '/S' -Wait
+          echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
       - name: Configure
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: ${{ env.QT_ROOT_DIR }}/bin/qt-cmake -S ${{ github.workspace }} -B . -G Ninja
@@ -84,23 +92,36 @@ jobs:
               -DQT_HOST_PATH="${{ env.QT_ROOT_DIR }}/../msvc2022_64"
               -DQT_DEBUG_FIND_PACKAGE=ON
               -DQGC_STABLE_BUILD=${{ github.ref_type == 'tag' || contains(github.ref, 'Stable') && 'ON' || 'OFF' }}
+              -DCPACK_GENERATOR="NSIS"
+              -DCMAKE_INSTALL_PREFIX="${{ runner.temp }}\shadow_build_dir\install"
 
       - name: Build
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --build . --target all --config ${{ matrix.BuildType }}
 
-      - name: Install
+      - name: Create Installer
         working-directory: ${{ runner.temp }}\shadow_build_dir
-        run: cmake --install . --config ${{ matrix.BuildType }}
+        run: cpack -G NSIS --config CPackConfig.cmake
+
+      - name: List Build Directory
+        shell: pwsh
+        run: |
+          Write-Host "Listing ${{ runner.temp }}\shadow_build_dir"
+          Get-ChildItem -Recurse "${{ runner.temp }}\shadow_build_dir"
 
       - name: Create Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ runner.temp }}\shadow_build_dir\${{ env.ARTIFACT }}
+          files: |
+            ${{ runner.temp }}\shadow_build_dir\${{ env.PACKAGE }}-*-win64.exe
+            ${{ runner.temp }}\shadow_build_dir\${{ env.ARTIFACT }}
+            ${{ runner.temp }}\shadow_build_dir\install\${{ env.ARTIFACT }}
+            ${{ runner.temp }}\shadow_build_dir\_CPack_Packages\win64\NSIS\${{ env.PACKAGE }}*.exe
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
           name: ${{ github.ref_type == 'tag' && format('Release {0}', github.ref_name) || 'Development Build' }}
           prerelease: ${{ github.ref_type != 'tag' }}
           generate_release_notes: true
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

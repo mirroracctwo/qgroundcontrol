@@ -80,9 +80,58 @@ jobs:
       - name: Install NSIS
         shell: pwsh
         run: |
-          $nsisUrl = "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.09/nsis-3.09-setup.exe"
-          Invoke-WebRequest -Uri $nsisUrl -OutFile nsis-setup.exe
-          Start-Process -FilePath .\nsis-setup.exe -ArgumentList '/S' -Wait
+          Write-Host "Downloading NSIS installer..."
+          $nsisUrl = "https://sourceforge.net/projects/nsis/files/NSIS%203/3.09/nsis-3.09-setup.exe/download"
+          $installPath = Join-Path $env:TEMP "nsis-setup.exe"
+          
+          # Download with retry logic
+          $maxRetries = 3
+          $retryCount = 0
+          $success = $false
+          
+          do {
+              try {
+                  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                  Invoke-WebRequest -Uri $nsisUrl -OutFile $installPath -UseBasicParsing
+                  if (Test-Path $installPath) {
+                      $success = $true
+                      Write-Host "Download successful"
+                  }
+              }
+              catch {
+                  $retryCount++
+                  Write-Warning "Download attempt $retryCount failed: $_"
+                  Start-Sleep -Seconds 5
+              }
+          } while (-not $success -and $retryCount -lt $maxRetries)
+          
+          if (-not $success) {
+              throw "Failed to download NSIS installer after $maxRetries attempts"
+          }
+          
+          Write-Host "Installing NSIS..."
+          $process = Start-Process -FilePath $installPath -ArgumentList '/S' -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+              throw "NSIS installation failed with exit code $($process.ExitCode)"
+          }
+          
+          Write-Host "Adding NSIS to PATH..."
+          echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          
+          # Verify installation
+          if (Test-Path "C:\Program Files (x86)\NSIS\makensis.exe") {
+              Write-Host "NSIS installed successfully"
+          } else {
+              throw "NSIS installation verification failed"
+          }
+
+      # Alternative NSIS installation using Chocolatey if the above fails
+      - name: Install NSIS (Fallback)
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host "Installing NSIS using Chocolatey..."
+          choco install nsis -y --version=3.09
           echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Configure

@@ -89,16 +89,109 @@ jobs:
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --build . --target all --config ${{ matrix.BuildType }}
 
+      - name: Deploy Qt Dependencies
+        working-directory: ${{ runner.temp }}\shadow_build_dir\Release
+        run: |
+          ${{ env.QT_ROOT_DIR }}\bin\windeployqt.exe --qmldir ${{ github.workspace }}\src QGroundControl.exe --verbose=2 --release --compiler-runtime --no-system-d3d-compiler --no-opengl-sw
+
       - name: Install
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --install . --config ${{ matrix.BuildType }}
+
+      - name: Copy Dependencies
+        shell: pwsh
+        run: |
+          $targetPath = "${{ runner.temp }}\shadow_build_dir\Release"
+          
+          # Copy GStreamer DLLs and dependencies
+          $gstPaths = @(
+            "C:\gstreamer\1.0\msvc_x86_64\bin",
+            "C:\gstreamer\1.0\msvc_x86_64\lib\gstreamer-1.0"
+          )
+          
+          foreach ($gstPath in $gstPaths) {
+            if (Test-Path $gstPath) {
+              Write-Host "Copying from $gstPath"
+              Copy-Item "$gstPath\*.dll" -Destination $targetPath
+              if (Test-Path "$gstPath\*.gst") {
+                Copy-Item "$gstPath\*.gst" -Destination $targetPath
+              }
+            }
+          }
+          
+          # Copy Visual C++ Runtime DLLs
+          $vcruntimeDlls = @(
+            "msvcp140.dll",
+            "msvcp140_1.dll",
+            "msvcp140_2.dll",
+            "vcruntime140.dll",
+            "vcruntime140_1.dll",
+            "concrt140.dll"
+          )
+          
+          foreach ($dll in $vcruntimeDlls) {
+            $systemDll = "C:\Windows\System32\$dll"
+            if (Test-Path $systemDll) {
+              Copy-Item $systemDll -Destination $targetPath
+              Write-Host "Copied $dll"
+            } else {
+              Write-Host "Warning: Could not find $dll"
+            }
+          }
+          
+          # Copy DirectX Runtime
+          $dxDlls = @(
+            "d3dcompiler_47.dll",
+            "d3dx9_43.dll"
+          )
+          foreach ($dll in $dxDlls) {
+            $systemDll = "C:\Windows\System32\$dll"
+            if (Test-Path $systemDll) {
+              Copy-Item $systemDll -Destination $targetPath
+              Write-Host "Copied $dll"
+            }
+          }
+          
+          # Create plugins directory and copy Qt plugins if not already done by windeployqt
+          $pluginsDir = Join-Path $targetPath "plugins"
+          if (-not (Test-Path $pluginsDir)) {
+            New-Item -ItemType Directory -Path $pluginsDir -Force
+            Copy-Item "${{ env.QT_ROOT_DIR }}\plugins\*" -Destination $pluginsDir -Recurse -Force
+          }
+
+      - name: Verify Critical Files
+        shell: pwsh
+        run: |
+          $targetPath = "${{ runner.temp }}\shadow_build_dir\Release"
+          $criticalFiles = @(
+            "QGroundControl.exe",
+            "msvcp140.dll",
+            "vcruntime140.dll"
+          )
+          
+          foreach ($file in $criticalFiles) {
+            if (Test-Path "$targetPath\$file") {
+              Write-Host "✓ Found $file"
+            } else {
+              Write-Host "✗ Missing $file"
+              exit 1
+            }
+          }
+          
+          Write-Host "Total files in release directory:"
+          Get-ChildItem $targetPath -Recurse | Measure-Object | Select-Object -ExpandProperty Count
 
       - name: Upload Build File
         if: matrix.BuildType == 'Release'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE }}
-          path: ${{ runner.temp }}\shadow_build_dir\Release\**
+          path: |
+            ${{ runner.temp }}\shadow_build_dir\Release\**
+            !${{ runner.temp }}\shadow_build_dir\Release\*.cpp
+            !${{ runner.temp }}\shadow_build_dir\Release\*.h
+            !${{ runner.temp }}\shadow_build_dir\Release\*.obj
+            !${{ runner.temp }}\shadow_build_dir\Release\*.pdb
           retention-days: 90
 
       - name: Create Release

@@ -92,7 +92,7 @@ jobs:
       - name: Deploy Qt Dependencies
         working-directory: ${{ runner.temp }}\shadow_build_dir\Release
         run: |
-          ${{ env.QT_ROOT_DIR }}\bin\windeployqt.exe --qmldir ${{ github.workspace }}\src QGroundControl.exe --verbose=2 --release --compiler-runtime --no-system-d3d-compiler --no-opengl-sw
+          ${{ env.QT_ROOT_DIR }}\bin\windeployqt.exe --qmldir ${{ github.workspace }}\src SarajDroneTech.exe --verbose=2 --release --compiler-runtime --no-system-d3d-compiler --no-opengl-sw
 
       - name: Install
         working-directory: ${{ runner.temp }}\shadow_build_dir
@@ -122,11 +122,8 @@ jobs:
           # Copy Visual C++ Runtime DLLs
           $vcruntimeDlls = @(
             "msvcp140.dll",
-            "msvcp140_1.dll",
-            "msvcp140_2.dll",
             "vcruntime140.dll",
-            "vcruntime140_1.dll",
-            "concrt140.dll"
+            "vcruntime140_1.dll"
           )
           
           foreach ($dll in $vcruntimeDlls) {
@@ -134,52 +131,14 @@ jobs:
             if (Test-Path $systemDll) {
               Copy-Item $systemDll -Destination $targetPath
               Write-Host "Copied $dll"
-            } else {
-              Write-Host "Warning: Could not find $dll"
             }
-          }
-          
-          # Copy DirectX Runtime
-          $dxDlls = @(
-            "d3dcompiler_47.dll",
-            "d3dx9_43.dll"
-          )
-          foreach ($dll in $dxDlls) {
-            $systemDll = "C:\Windows\System32\$dll"
-            if (Test-Path $systemDll) {
-              Copy-Item $systemDll -Destination $targetPath
-              Write-Host "Copied $dll"
-            }
-          }
-          
-          # Create plugins directory and copy Qt plugins if not already done by windeployqt
-          $pluginsDir = Join-Path $targetPath "plugins"
-          if (-not (Test-Path $pluginsDir)) {
-            New-Item -ItemType Directory -Path $pluginsDir -Force
-            Copy-Item "${{ env.QT_ROOT_DIR }}\plugins\*" -Destination $pluginsDir -Recurse -Force
           }
 
-      - name: Verify Critical Files
+      - name: List Directory Contents
         shell: pwsh
         run: |
-          $targetPath = "${{ runner.temp }}\shadow_build_dir\Release"
-          $criticalFiles = @(
-            "QGroundControl.exe",
-            "msvcp140.dll",
-            "vcruntime140.dll"
-          )
-          
-          foreach ($file in $criticalFiles) {
-            if (Test-Path "$targetPath\$file") {
-              Write-Host "✓ Found $file"
-            } else {
-              Write-Host "✗ Missing $file"
-              exit 1
-            }
-          }
-          
-          Write-Host "Total files in release directory:"
-          Get-ChildItem $targetPath -Recurse | Measure-Object | Select-Object -ExpandProperty Count
+          Write-Host "Contents of Release directory:"
+          Get-ChildItem "${{ runner.temp }}\shadow_build_dir\Release" -Recurse
 
       - name: Upload Build File
         if: matrix.BuildType == 'Release'

@@ -109,19 +109,35 @@ jobs:
         run: |
           $targetPath = "${{ runner.temp }}\shadow_build_dir\Release"
           
-          # Copy GStreamer binaries and plugins
-          $gstBinPath = "C:\gstreamer\1.0\msvc_x86_64\bin"
-          $gstPluginsPath = "C:\gstreamer\1.0\msvc_x86_64\lib\gstreamer-1.0"
+          # Copy GStreamer binaries and plugins using the environment variable
+          $gstRoot = $env:GSTREAMER_1_0_ROOT_MSVC_X86_64
+          $gstBinPath = Join-Path $gstRoot "bin"
+          $gstPluginsPath = Join-Path $gstRoot "lib\gstreamer-1.0"
+          
+          Write-Host "GStreamer Root: $gstRoot"
+          Write-Host "GStreamer Bin Path: $gstBinPath"
+          Write-Host "GStreamer Plugins Path: $gstPluginsPath"
           
           # Create plugins directory
           $pluginsDir = Join-Path $targetPath "gstreamer-1.0"
           New-Item -ItemType Directory -Force -Path $pluginsDir
           
-          # Copy all GStreamer binaries
-          Copy-Item "$gstBinPath\*.dll" -Destination $targetPath
+          # Verify paths exist before copying
+          if (Test-Path $gstBinPath) {
+            Write-Host "Copying GStreamer binaries from $gstBinPath"
+            Copy-Item "$gstBinPath\*.dll" -Destination $targetPath
+          } else {
+            Write-Host "Error: GStreamer bin path not found: $gstBinPath"
+            exit 1
+          }
           
-          # Copy all GStreamer plugins
-          Copy-Item "$gstPluginsPath\*.dll" -Destination $pluginsDir
+          if (Test-Path $gstPluginsPath) {
+            Write-Host "Copying GStreamer plugins from $gstPluginsPath"
+            Copy-Item "$gstPluginsPath\*.dll" -Destination $pluginsDir
+          } else {
+            Write-Host "Error: GStreamer plugins path not found: $gstPluginsPath"
+            exit 1
+          }
           
           # Copy Visual C++ Runtime
           $vcruntimeDlls = @(
@@ -134,8 +150,15 @@ jobs:
             $systemDll = "C:\Windows\System32\$dll"
             if (Test-Path $systemDll) {
               Copy-Item $systemDll -Destination $targetPath
+              Write-Host "Copied $dll"
+            } else {
+              Write-Host "Warning: Could not find $dll"
             }
           }
+          
+          # List contents to verify
+          Write-Host "`nContents of target directory:"
+          Get-ChildItem $targetPath -Recurse | Select-Object FullName
 
       - name: List Directory Contents
         shell: pwsh

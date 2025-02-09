@@ -89,6 +89,11 @@ jobs:
         working-directory: ${{ runner.temp }}\shadow_build_dir
         run: cmake --build . --target all --config ${{ matrix.BuildType }}
 
+      - name: Install NSIS
+        run: |
+          choco install nsis -y
+          echo "NSIS_ROOT=C:\Program Files (x86)\NSIS" >> $GITHUB_ENV
+
       - name: Deploy Qt Dependencies
         working-directory: ${{ runner.temp }}\shadow_build_dir\Release
         run: |
@@ -140,24 +145,47 @@ jobs:
           Write-Host "Contents of Release directory:"
           Get-ChildItem "${{ runner.temp }}\shadow_build_dir\Release" -Recurse
 
-      - name: Upload Build File
+      - name: Create Installer
+        working-directory: ${{ runner.temp }}\shadow_build_dir
+        run: |
+          mkdir staging
+          xcopy /E /I /Y Release\* staging\
+          
+          echo !define APP_NAME "${{ env.PACKAGE }}" > installer.nsi
+          echo !define APP_VERSION "1.0.0" >> installer.nsi
+          echo !define INSTALLER_NAME "${{ env.ARTIFACT }}" >> installer.nsi
+          
+          echo OutFile "${{ env.ARTIFACT }}" >> installer.nsi
+          echo InstallDir "$PROGRAMFILES64\${{ env.PACKAGE }}" >> installer.nsi
+          
+          echo Section "Install" >> installer.nsi
+          echo SetOutPath "$INSTDIR" >> installer.nsi
+          echo File /r "staging\*.*" >> installer.nsi
+          echo CreateDirectory "$SMPROGRAMS\${{ env.PACKAGE }}" >> installer.nsi
+          echo CreateShortCut "$SMPROGRAMS\${{ env.PACKAGE }}\${{ env.PACKAGE }}.lnk" "$INSTDIR\SarajDroneTech.exe" >> installer.nsi
+          echo WriteUninstaller "$INSTDIR\uninstall.exe" >> installer.nsi
+          echo SectionEnd >> installer.nsi
+          
+          echo Section "Uninstall" >> installer.nsi
+          echo RMDir /r "$INSTDIR" >> installer.nsi
+          echo RMDir /r "$SMPROGRAMS\${{ env.PACKAGE }}" >> installer.nsi
+          echo SectionEnd >> installer.nsi
+          
+          "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
+
+      - name: Upload Installer
         if: matrix.BuildType == 'Release'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PACKAGE }}
-          path: |
-            ${{ runner.temp }}\shadow_build_dir\Release\**
-            !${{ runner.temp }}\shadow_build_dir\Release\*.cpp
-            !${{ runner.temp }}\shadow_build_dir\Release\*.h
-            !${{ runner.temp }}\shadow_build_dir\Release\*.obj
-            !${{ runner.temp }}\shadow_build_dir\Release\*.pdb
+          name: ${{ env.PACKAGE }}-installer
+          path: ${{ runner.temp }}\shadow_build_dir\${{ env.ARTIFACT }}
           retention-days: 90
 
       - name: Create Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ runner.temp }}\shadow_build_dir\staging\**
+          files: ${{ runner.temp }}\shadow_build_dir\${{ env.ARTIFACT }}
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
           name: ${{ github.ref_type == 'tag' && format('Release {0}', github.ref_name) || 'Development Build' }}
           prerelease: ${{ github.ref_type != 'tag' }}

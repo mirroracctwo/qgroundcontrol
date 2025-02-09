@@ -172,10 +172,6 @@ jobs:
           mkdir staging
           xcopy /E /I /Y Release\* staging\
           
-          # Verify staging directory contents
-          dir /s /b staging > staging_contents.txt
-          type staging_contents.txt
-          
           echo !define APP_NAME "${{ env.PACKAGE }}" > installer.nsi
           echo !define APP_VERSION "1.0.0" >> installer.nsi
           echo !define INSTALLER_NAME "${{ env.ARTIFACT }}" >> installer.nsi
@@ -188,12 +184,18 @@ jobs:
           echo File /r "staging\*.*" >> installer.nsi
           echo CreateDirectory "$SMPROGRAMS\${{ env.PACKAGE }}" >> installer.nsi
           echo CreateShortCut "$SMPROGRAMS\${{ env.PACKAGE }}\${{ env.PACKAGE }}.lnk" "$INSTDIR\SarajDroneTech.exe" >> installer.nsi
+          echo WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${{ env.PACKAGE }}" "DisplayName" "${{ env.PACKAGE }}" >> installer.nsi
+          echo WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${{ env.PACKAGE }}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\"" >> installer.nsi
+          echo WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${{ env.PACKAGE }}" "DisplayIcon" "$INSTDIR\SarajDroneTech.exe" >> installer.nsi
+          echo WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${{ env.PACKAGE }}" "Publisher" "Saraj Drone Tech" >> installer.nsi
+          echo WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${{ env.PACKAGE }}" "DisplayVersion" "1.0.0" >> installer.nsi
           echo WriteUninstaller "$INSTDIR\uninstall.exe" >> installer.nsi
           echo SectionEnd >> installer.nsi
           
           echo Section "Uninstall" >> installer.nsi
           echo RMDir /r "$INSTDIR" >> installer.nsi
           echo RMDir /r "$SMPROGRAMS\${{ env.PACKAGE }}" >> installer.nsi
+          echo DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${{ env.PACKAGE }}" >> installer.nsi
           echo SectionEnd >> installer.nsi
           
           "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
